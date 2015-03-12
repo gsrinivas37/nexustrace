@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.views">
+            <view
+            category="org.eclipse.linuxtools.tmf.ui.views.category"
+            class="org.eclipse.linuxtools.tracing.examples.ui.views.histogram.NewHistogramView"
+            id="org.eclipse.linuxtools.tracing.examples.ui.views.HistogramView"
+            name="%tracing.examples.histogram.view.name"
+            restorable="true">
+      </view>
+   </extension>
+   <extension
+         point="org.eclipse.linuxtools.tmf.core.tracetype">
+      <type
+            event_type="org.eclipse.tracecompass.tmf.core.event.TmfEvent"
+            id="org.eclipse.linuxtools.tracing.examples.nexus"
+            isDirectory="false"
+            name="NexusLite Trace"
+            trace_type="org.eclipse.linuxtools.tracing.examples.trace.nexus.NexusTrace">
+      </type>
+   </extension>
+   <extension
+         point="org.eclipse.linuxtools.tmf.ui.tracetypeui">
+      <type
+            icon="icons/jtypeassist_co.gif"
+            tracetype="org.eclipse.linuxtools.tracing.examples.nexus">
+      </type>
+   </extension>
+
+</plugin>
