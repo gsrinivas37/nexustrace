@@ -98,12 +98,12 @@ public class NexusTrace extends TmfTrace
 
   @Override
 	public boolean isComplete() {
-		return false;
+		return true;
 	}
 
   @Override
 	public long getStreamingInterval() {
-		return 10;
+		return 0;
 	}
 
   @Override

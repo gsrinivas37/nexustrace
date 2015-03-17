@@ -20,12 +20,23 @@
             name="NexusLite Trace"
             trace_type="org.eclipse.linuxtools.tracing.examples.trace.nexus.NexusTrace">
       </type>
+      <type
+            event_type="org.eclipse.tracecompass.tmf.core.event.TmfEvent"
+            id="org.eclipse.linuxtools.tracing.examples.seenu"
+            isDirectory="false"
+            name="Seenu Trace"
+            trace_type="org.eclipse.linuxtools.tracing.examples.SeenuTrace">
+      </type>
    </extension>
    <extension
          point="org.eclipse.linuxtools.tmf.ui.tracetypeui">
       <type
             icon="icons/jtypeassist_co.gif"
             tracetype="org.eclipse.linuxtools.tracing.examples.nexus">
+      </type>
+      <type
+            icon="icons/jtypeassist_co.gif"
+            tracetype="org.eclipse.linuxtools.tracing.examples.seenu">
       </type>
    </extension>
 
