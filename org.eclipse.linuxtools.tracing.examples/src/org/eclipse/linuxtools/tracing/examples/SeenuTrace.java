@@ -1,5 +1,15 @@
 package org.eclipse.linuxtools.tracing.examples;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileChannel.MapMode;
+import java.util.HashMap;
+
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IStatus;
@@ -23,8 +33,18 @@ import org.eclipse.tracecompass.tmf.core.trace.location.TmfLongLocation;
 
 public class SeenuTrace extends TmfTrace implements ITmfEventParser {
 
-	private long nbEvents = 10000;
 	ITmfLocation currentLoc = null;
+
+	TmfLongLocation fCurrent;
+
+	private int fOffset;
+	private File fFile;
+	private String[] fEventTypes;
+	private FileChannel fFileChannel;
+	private MappedByteBuffer fMappedByteBuffer;
+	private HashMap<Long, Integer> offset = new HashMap<Long, Integer>();
+
+	private static final int CHUNK_SIZE = 65536;
 
 	@Override
 	public IStatus validate(IProject project, String path) {
@@ -48,6 +68,38 @@ public class SeenuTrace extends TmfTrace implements ITmfEventParser {
 		super.initTrace(resource, path, type, name, traceTypeId);
 		setTimeRange(new TmfTimeRange(new TmfTimestamp(0), new TmfTimestamp(1)));
 		seekEvent(0);
+
+		fFile = new File(path);
+		fFile.length();
+		fEventTypes = readHeader(fFile);
+		offset.clear();
+		try {
+			fFileChannel = new FileInputStream(fFile).getChannel();
+			seek(0);
+		} catch (IOException e) {
+		}
+	}
+
+	@Override
+	public long getNbEvents() {
+		return 648;
+	}
+
+	private String[] readHeader(File file) {
+		String header = new String();
+		try (BufferedReader br = new BufferedReader(new FileReader(file));) {
+			header = br.readLine();
+		} catch (IOException e) {
+		}
+		fOffset = header.length() + 1;
+		return header.split(","); //$NON-NLS-1$
+	}
+
+	private void seek(long rank) throws IOException {
+		final int position = fOffset;
+		int size = Math.min((int) (fFileChannel.size() - position), CHUNK_SIZE);
+		fMappedByteBuffer = fFileChannel.map(MapMode.READ_ONLY, position, size);
+		offset.put(0L, 0);
 	}
 
 	@Override
@@ -63,7 +115,7 @@ public class SeenuTrace extends TmfTrace implements ITmfEventParser {
 	@Override
 	public double getLocationRatio(ITmfLocation location) {
 		TmfLongLocation locationInfo = (TmfLongLocation) location;
-		return locationInfo.getLocationInfo()/nbEvents;
+		return locationInfo.getLocationInfo()/getNbEvents();
 	}
 
 	@Override
@@ -82,14 +134,9 @@ public class SeenuTrace extends TmfTrace implements ITmfEventParser {
 
 	@Override
 	public ITmfContext seekEvent(double ratio) {
-		long loc = (long) (ratio*nbEvents);
+		long loc = (long) (ratio*getNbEvents());
 		TmfLongLocation location = new TmfLongLocation(loc);
 		return seekEvent(location);
-	}
-
-	@Override
-	public long getNbEvents() {
-		return nbEvents;
 	}
 
 	@Override
@@ -97,10 +144,43 @@ public class SeenuTrace extends TmfTrace implements ITmfEventParser {
 		TmfLongLocation location = (TmfLongLocation) context.getLocation();
 		Long info = location.getLocationInfo();
 		TmfEvent event = null;
+		StringBuffer buffer;
+
+		if(offset.containsKey(info)){
+			fMappedByteBuffer.position(offset.get(info));
+		}else{
+		    System.out.println(info);
+		    offset.put(info, fMappedByteBuffer.position());
+		}
+
+		if(fMappedByteBuffer.position()+fEventTypes.length>fMappedByteBuffer.limit()){
+			setNbEvents(info);
+		}
 
 		if(info<getNbEvents()){
+			buffer= new StringBuffer();
+			String str;
+			final TmfEventField[] events = new TmfEventField[fEventTypes.length];
+			byte b[] = new byte[1];
+			for(int i=0; i< events.length; i++){
+				buffer = new StringBuffer();
+				fMappedByteBuffer.get(b);
+				str = new String(b);
+				while(!str.equals(",")){
+					if(str.equals("\n")&&i==events.length-1){
+						break;
+					}else{
+					    System.out.println("");
+					}
+
+				    buffer.append(str);
+					fMappedByteBuffer.get(b);
+					str = new String(b);
+				};
+				events[i] = new TmfEventField(fEventTypes[i], buffer.toString(), null);
+			}
+
 			final TmfEventField tmfEventField = new TmfEventField("value", info, null);
-			final TmfEventField[] events = new TmfEventField[1];
 			events[0] = tmfEventField;
 			final TmfEventField content = new TmfEventField(ITmfEventField.ROOT_FIELD_ID, null, events);
 			event = new TmfEvent(this, info, new TmfTimestamp(info, ITmfTimestamp.MILLISECOND_SCALE), new TmfEventType(getTraceTypeId(), content), content);
