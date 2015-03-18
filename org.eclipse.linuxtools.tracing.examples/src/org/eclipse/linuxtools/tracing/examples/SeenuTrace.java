@@ -42,7 +42,7 @@ public class SeenuTrace extends TmfTrace implements ITmfEventParser {
 	private String[] fEventTypes;
 	private FileChannel fFileChannel;
 	private MappedByteBuffer fMappedByteBuffer;
-	private HashMap<Long, Integer> offset = new HashMap<Long, Integer>();
+	private int[] offset = new int[649];
 
 	private static final int CHUNK_SIZE = 65536;
 
@@ -72,7 +72,10 @@ public class SeenuTrace extends TmfTrace implements ITmfEventParser {
 		fFile = new File(path);
 		fFile.length();
 		fEventTypes = readHeader(fFile);
-		offset.clear();
+		for(int i=0; i<649; i++){
+			offset[i] = -1;
+		}
+
 		try {
 			fFileChannel = new FileInputStream(fFile).getChannel();
 			seek(0);
@@ -99,7 +102,7 @@ public class SeenuTrace extends TmfTrace implements ITmfEventParser {
 		final int position = fOffset;
 		int size = Math.min((int) (fFileChannel.size() - position), CHUNK_SIZE);
 		fMappedByteBuffer = fFileChannel.map(MapMode.READ_ONLY, position, size);
-		offset.put(0L, 0);
+		offset[0]= 0;
 	}
 
 	@Override
@@ -146,11 +149,11 @@ public class SeenuTrace extends TmfTrace implements ITmfEventParser {
 		TmfEvent event = null;
 		StringBuffer buffer;
 
-		if(offset.containsKey(info)){
-			fMappedByteBuffer.position(offset.get(info));
+		if(offset[info.intValue()]!=-1){
+			fMappedByteBuffer.position(offset[info.intValue()]);
 		}else{
 		    System.out.println(info);
-		    offset.put(info, fMappedByteBuffer.position());
+		    offset[info.intValue()]= fMappedByteBuffer.position();
 		}
 
 		if(fMappedByteBuffer.position()+fEventTypes.length>fMappedByteBuffer.limit()){
@@ -174,8 +177,13 @@ public class SeenuTrace extends TmfTrace implements ITmfEventParser {
 					}
 
 				    buffer.append(str);
-					fMappedByteBuffer.get(b);
-					str = new String(b);
+
+				    if(fMappedByteBuffer.position()==fMappedByteBuffer.limit()){
+				    	str = "\n";
+				    }else{
+				    	fMappedByteBuffer.get(b);
+				    	str = new String(b);
+				    }
 				};
 				events[i] = new TmfEventField(fEventTypes[i], buffer.toString(), null);
 			}
