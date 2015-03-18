@@ -8,8 +8,6 @@ import java.io.IOException;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
-import java.util.HashMap;
-
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IStatus;
@@ -170,7 +168,7 @@ public class SeenuTrace extends TmfTrace implements ITmfEventParser {
 				fMappedByteBuffer.get(b);
 				str = new String(b);
 				while(!str.equals(",")){
-					if(str.equals("\n")&&i==events.length-1){
+					if((str.equals("\n")&&i==events.length-1)||(str.equals("\r")&&i==events.length-1)){
 						break;
 					}else{
 					    System.out.println("");

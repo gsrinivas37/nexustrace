@@ -123,7 +123,7 @@ public class TmfStatisticsTotalsModule2 extends TmfStateSystemAnalysisModule {
             try {
                 /* Total number of cache accesses */
                 int quark = ss.getQuarkAbsoluteAndAdd(Attributes.TOTAL);
-                ITmfEventField field = event.getContent().getField(" CPU0 - Data Cache Access");
+                ITmfEventField field = event.getContent().getField(" CPU0 - Branch Miss");
                 long parseLong = Long.parseLong(field.getValue().toString());
 
                 ss.modifyAttribute(ts, TmfStateValue.newValueLong(parseLong), quark);
