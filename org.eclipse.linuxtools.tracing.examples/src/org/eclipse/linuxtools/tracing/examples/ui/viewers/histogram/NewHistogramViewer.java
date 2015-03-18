@@ -13,8 +13,10 @@
 package org.eclipse.linuxtools.tracing.examples.ui.viewers.histogram;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
+import org.eclipse.linuxtools.tracing.examples.cache.TmfStatisticsModule2;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
@@ -74,7 +76,7 @@ public class NewHistogramViewer extends TmfBarChartViewer {
                     /* Add the values for each trace */
                     for (ITmfTrace trace : TmfTraceManager.getTraceSet(getTrace())) {
                         /* Retrieve the statistics object */
-                        final TmfStatisticsModule statsMod = (TmfStatisticsModule) trace.getAnalysisModule(TmfStatisticsModule.ID);
+                        final TmfStatisticsModule2 statsMod = (TmfStatisticsModule2) trace.getAnalysisModule(TmfStatisticsModule2.ID);
                         if (statsMod == null) {
                             /* No statistics module available for this trace */
                             continue;

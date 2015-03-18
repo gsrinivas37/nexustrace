@@ -7,7 +7,7 @@
             category="org.eclipse.linuxtools.tmf.ui.views.category"
             class="org.eclipse.linuxtools.tracing.examples.ui.views.histogram.NewHistogramView"
             id="org.eclipse.linuxtools.tracing.examples.ui.views.HistogramView"
-            name="%tracing.examples.histogram.view.name"
+            name="CPU0 Branch Miss"
             restorable="true">
       </view>
    </extension>
@@ -38,6 +38,19 @@
             icon="icons/jtypeassist_co.gif"
             tracetype="org.eclipse.linuxtools.tracing.examples.seenu">
       </type>
+   </extension>
+   <extension
+         point="org.eclipse.linuxtools.tmf.core.analysis">
+      <module
+            analysis_module="org.eclipse.linuxtools.tracing.examples.cache.TmfStatisticsModule2"
+            automatic="true"
+            id="org.eclipse.linuxtools.tracing.examples.module"
+            name="Cache Statistics Analysis">
+         <tracetype
+               applies="true"
+               class="org.eclipse.linuxtools.tracing.examples.SeenuTrace">
+         </tracetype>
+      </module>
    </extension>
 
 </plugin>
